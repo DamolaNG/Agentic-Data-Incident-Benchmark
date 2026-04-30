@@ -1,0 +1,10 @@
+incidents:
+  - id: INC-000
+    name: foundation_placeholder
+    status: placeholder
+    description: >
+      Placeholder incident used during phase 1. Later phases will replace this
+      with controlled data pipeline failures.
+    expected_signals: []
+    success_criteria: []
+

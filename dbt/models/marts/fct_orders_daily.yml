@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: fct_orders_daily
+    description: Daily order metrics used as a simple benchmark output table.
+    columns:
+      - name: order_date
+        tests:
+          - not_null
+          - unique
+      - name: order_count
+        tests:
+          - not_null
+      - name: gross_order_value
+        tests:
+          - not_null
+      - name: completed_order_value
+        tests:
+          - not_null
+

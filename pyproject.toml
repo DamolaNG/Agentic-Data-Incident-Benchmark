@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic-data-incident-benchmark"
+version = "0.1.0"
+description = "A benchmark for measuring whether LLM coding agents improve data pipeline incident response speed and fix accuracy."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "dagster>=1.8,<2.0",
+    "dagster-webserver>=1.8,<2.0",
+    "dbt-core>=1.8,<2.0",
+    "dbt-duckdb>=1.8,<2.0",
+    "duckdb>=1.1,<2.0",
+    "pandas>=2.2,<3.0",
+    "pyyaml>=6.0,<7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9.0",
+    "ruff>=0.6,<1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+

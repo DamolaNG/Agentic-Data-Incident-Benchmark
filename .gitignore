@@ -1,0 +1,25 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Local data and warehouse outputs
+data/generated/*.csv
+data/raw/*.csv
+warehouse/local/*.duckdb
+warehouse/local/*.wal
+
+# dbt outputs
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Dagster local state
+.dagster/
+
+# Local learning notes
+quiz.md
+docs/learning_phase_1.md
