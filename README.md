@@ -6,7 +6,7 @@ A benchmark for measuring whether LLM coding agents improve data pipeline incide
 
 This project creates a local data platform where realistic data pipeline incidents can be introduced, diagnosed, fixed, and measured. The benchmark is designed to compare incident response with and without LLM coding agents.
 
-The first phase establishes the project foundation:
+The project foundation includes:
 
 - Python package layout for data platform code.
 - DuckDB as a local analytical warehouse.
@@ -45,13 +45,13 @@ Create a virtual environment and install dependencies:
 make setup
 ```
 
-Generate sample source data:
+Generate synthetic ecommerce source data:
 
 ```bash
 make generate-data
 ```
 
-Load the sample data into DuckDB:
+Load the raw data into DuckDB:
 
 ```bash
 make ingest
@@ -69,6 +69,12 @@ Run dbt tests:
 make dbt-test
 ```
 
+Generate dbt documentation:
+
+```bash
+make dbt-docs
+```
+
 Start Dagster locally:
 
 ```bash
@@ -80,4 +86,3 @@ Run the full local pipeline:
 ```bash
 make pipeline
 ```
-

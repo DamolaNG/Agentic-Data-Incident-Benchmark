@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: dashboard_business_metrics
+    description: Dashboard-ready daily business metrics combining funnel and revenue marts.
+    config:
+      tags: ["dashboard", "business_metrics", "daily"]
+      meta:
+        owner: business_intelligence
+        grain: one row per metric date
+    columns:
+      - name: metric_date
+        description: Reporting date for the metric row.
+        tests: [not_null, unique]
+      - name: sessions
+        description: Total sessions on the date.
+        tests: [not_null]
+      - name: product_view_sessions
+        description: Sessions that reached product view.
+        tests: [not_null]
+      - name: add_to_cart_sessions
+        description: Sessions that reached add to cart.
+        tests: [not_null]
+      - name: checkout_started_sessions
+        description: Sessions that reached checkout.
+        tests: [not_null]
+      - name: purchase_sessions
+        description: Sessions that reached purchase.
+        tests: [not_null]
+      - name: session_conversion_rate
+        description: Purchase sessions divided by total sessions.
+      - name: transaction_count
+        description: Total transaction attempts on the date.
+        tests: [not_null]
+      - name: succeeded_transactions
+        description: Successful transactions on the date.
+        tests: [not_null]
+      - name: gross_revenue
+        description: Revenue from successful transactions.
+        tests: [not_null]
+      - name: average_order_value
+        description: Average successful transaction amount.
+

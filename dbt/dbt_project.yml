@@ -20,6 +20,11 @@ models:
   agentic_data_incident_benchmark:
     staging:
       +materialized: view
+    intermediate:
+      +materialized: view
     marts:
       +materialized: table
-
+    features:
+      +materialized: table
+    dashboards:
+      +materialized: table

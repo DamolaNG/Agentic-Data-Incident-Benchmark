@@ -3,8 +3,9 @@ PIP := .venv/bin/pip
 DBT := .venv/bin/dbt
 DAGSTER := .venv/bin/dagster
 WAREHOUSE_PATH := warehouse/local/benchmark.duckdb
+VENV_PYTHON ?= python3
 
-.PHONY: help setup install generate-data ingest dbt-debug dbt-run dbt-test dagster-dev pipeline test lint clean
+.PHONY: help setup install generate-data ingest dbt-debug dbt-run dbt-test dbt-docs dagster-dev pipeline test lint clean
 
 help:
 	@echo "Available commands:"
@@ -14,6 +15,7 @@ help:
 	@echo "  make dbt-debug      Validate dbt configuration"
 	@echo "  make dbt-run        Run dbt transformations"
 	@echo "  make dbt-test       Run dbt tests"
+	@echo "  make dbt-docs       Generate dbt documentation"
 	@echo "  make dagster-dev    Start Dagster webserver locally"
 	@echo "  make pipeline       Generate, ingest, transform, and test"
 	@echo "  make test           Run Python tests"
@@ -21,7 +23,7 @@ help:
 	@echo "  make clean          Remove generated local outputs"
 
 setup:
-	python3 -m venv .venv
+	$(VENV_PYTHON) -m venv .venv
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
 
@@ -29,7 +31,7 @@ install:
 	$(PIP) install -r requirements.txt
 
 generate-data:
-	$(PYTHON) -m agentic_data_incident_benchmark.data_generation.generate_orders
+	$(PYTHON) -m agentic_data_incident_benchmark.data_generation.generate_ecommerce_data
 
 ingest:
 	$(PYTHON) -m agentic_data_incident_benchmark.ingestion.load_raw
@@ -42,6 +44,9 @@ dbt-run:
 
 dbt-test:
 	$(DBT) test --project-dir dbt --profiles-dir dbt
+
+dbt-docs:
+	$(DBT) docs generate --project-dir dbt --profiles-dir dbt
 
 dagster-dev:
 	DAGSTER_HOME=.dagster $(DAGSTER) dev -m agentic_data_incident_benchmark.orchestration.definitions
@@ -56,4 +61,3 @@ lint:
 
 clean:
 	rm -rf data/generated/*.csv data/raw/*.csv warehouse/local/*.duckdb warehouse/local/*.wal dbt/target dbt/logs dbt/dbt_packages .dagster
-

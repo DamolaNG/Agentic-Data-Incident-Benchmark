@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: fct_fraud_features
+    description: Transaction-level feature table for fraud analysis and future benchmark tasks.
+    config:
+      tags: ["feature", "fraud", "transactions"]
+      meta:
+        owner: risk_analytics
+        grain: one row per transaction
+    columns:
+      - name: transaction_id
+        description: Stable unique identifier for a transaction.
+        tests: [not_null, unique]
+      - name: user_id
+        description: User who made the transaction.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: session_id
+        description: Session that produced the transaction.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sessions')
+                field: session_id
+      - name: transaction_timestamp
+        description: Timestamp when the payment was attempted.
+      - name: transaction_date
+        description: Date when the payment was attempted.
+      - name: amount
+        description: Transaction amount in GBP.
+      - name: payment_method
+        description: Payment method used.
+      - name: transaction_status
+        description: Final status of the transaction.
+      - name: signup_date
+        description: User signup date.
+      - name: acquisition_channel
+        description: Marketing channel that acquired the user.
+      - name: country
+        description: User country code.
+      - name: total_sessions
+        description: Number of sessions created by the user.
+      - name: device_type_count
+        description: Count of distinct device types used by the user.
+      - name: traffic_source_count
+        description: Count of distinct traffic sources used by the user.
+      - name: device_type
+        description: Device category used for the purchase session.
+      - name: traffic_source
+        description: Source that drove the purchase session.
+      - name: event_count
+        description: Count of events in the purchase session.
+      - name: has_product_view
+        description: Whether the purchase session had a product view.
+      - name: has_add_to_cart
+        description: Whether the purchase session had an add-to-cart event.
+      - name: has_checkout_started
+        description: Whether the purchase session had a checkout event.
+      - name: has_purchase_event
+        description: Whether the purchase session had a purchase event.
+      - name: fraud_label
+        description: Fraud review outcome.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["fraud", "legitimate"]
+      - name: is_fraud
+        description: Numeric fraud flag for modelling and analysis.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]

@@ -3,6 +3,5 @@ agentic_data_incident_benchmark:
   outputs:
     dev:
       type: duckdb
-      path: ../warehouse/local/benchmark.duckdb
+      path: warehouse/local/benchmark.duckdb
       threads: 4
-

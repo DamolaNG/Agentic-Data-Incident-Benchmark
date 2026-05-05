@@ -1,0 +1,79 @@
+version: 2
+
+models:
+  - name: int_user_sessions
+    description: User-level session summary used by downstream marts and features.
+    config:
+      tags: ["intermediate", "users", "sessions"]
+      meta:
+        owner: analytics_engineering
+        grain: one row per user
+    columns:
+      - name: user_id
+        description: Stable unique identifier for a user.
+        tests: [not_null, unique]
+      - name: signup_date
+        description: Date the user signed up.
+      - name: acquisition_channel
+        description: Marketing channel that acquired the user.
+      - name: country
+        description: User country code.
+      - name: is_active
+        description: Whether the user is currently active.
+      - name: total_sessions
+        description: Number of sessions created by the user.
+        tests: [not_null]
+      - name: first_session_at
+        description: First known session timestamp for the user.
+      - name: most_recent_session_at
+        description: Most recent known session timestamp for the user.
+      - name: device_type_count
+        description: Count of distinct device types used by the user.
+      - name: traffic_source_count
+        description: Count of distinct traffic sources used by the user.
+
+  - name: int_session_events
+    description: Session-level clickstream summary with funnel event flags.
+    config:
+      tags: ["intermediate", "sessions", "events", "funnel"]
+      meta:
+        owner: analytics_engineering
+        grain: one row per session
+    columns:
+      - name: session_id
+        description: Stable unique identifier for a session.
+        tests: [not_null, unique]
+      - name: user_id
+        description: User who created the session.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: session_started_at
+        description: Timestamp when the session started.
+      - name: session_date
+        description: Date when the session started.
+        tests: [not_null]
+      - name: device_type
+        description: Device category used for the session.
+      - name: traffic_source
+        description: Source that drove the session.
+      - name: event_count
+        description: Count of events in the session.
+        tests: [not_null]
+      - name: first_event_at
+        description: Earliest event timestamp in the session.
+      - name: last_event_at
+        description: Latest event timestamp in the session.
+      - name: has_page_view
+        description: Flag showing whether the session had a page view.
+      - name: has_product_view
+        description: Flag showing whether the session had a product view.
+      - name: has_add_to_cart
+        description: Flag showing whether the session had an add-to-cart event.
+      - name: has_checkout_started
+        description: Flag showing whether the session had a checkout event.
+      - name: has_purchase_event
+        description: Flag showing whether the session had a purchase event.

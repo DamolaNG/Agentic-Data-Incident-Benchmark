@@ -1,0 +1,184 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: Raw ecommerce source tables loaded from synthetic CSV files into DuckDB.
+    tables:
+      - name: raw_users
+        description: One row per synthetic product user.
+        columns:
+          - name: user_id
+            description: Stable unique identifier for a user.
+            tests:
+              - not_null
+              - unique
+          - name: signup_date
+            description: Date the user signed up.
+            tests:
+              - not_null
+          - name: acquisition_channel
+            description: Marketing channel that acquired the user.
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["organic", "paid_search", "paid_social", "email", "referral"]
+          - name: country
+            description: User country code.
+            tests:
+              - not_null
+          - name: is_active
+            description: Whether the user is currently active.
+
+      - name: raw_sessions
+        description: One row per user session.
+        columns:
+          - name: session_id
+            description: Stable unique identifier for a session.
+            tests:
+              - not_null
+              - unique
+          - name: user_id
+            description: User who created the session.
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_users')
+                    field: user_id
+          - name: session_started_at
+            description: Timestamp when the session started.
+            tests:
+              - not_null
+          - name: device_type
+            description: Device category used for the session.
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["desktop", "mobile", "tablet"]
+          - name: traffic_source
+            description: Source that drove the session.
+            tests:
+              - not_null
+
+      - name: raw_events
+        description: Clickstream events emitted during sessions.
+        columns:
+          - name: event_id
+            description: Stable unique identifier for an event.
+            tests:
+              - not_null
+              - unique
+          - name: session_id
+            description: Session where the event occurred.
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_sessions')
+                    field: session_id
+          - name: user_id
+            description: User who emitted the event.
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_users')
+                    field: user_id
+          - name: event_timestamp
+            description: Timestamp when the event occurred.
+            tests:
+              - not_null
+          - name: event_name
+            description: Type of clickstream event.
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["page_view", "product_view", "add_to_cart", "checkout_started", "purchase"]
+          - name: page_url
+            description: Page path associated with the event.
+
+      - name: raw_transactions
+        description: Payment attempts linked to purchase sessions.
+        columns:
+          - name: transaction_id
+            description: Stable unique identifier for a transaction.
+            tests:
+              - not_null
+              - unique
+          - name: session_id
+            description: Session that produced the transaction.
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_sessions')
+                    field: session_id
+          - name: user_id
+            description: User who made the transaction.
+            tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_users')
+                    field: user_id
+          - name: transaction_timestamp
+            description: Timestamp when the payment was attempted.
+            tests:
+              - not_null
+          - name: amount
+            description: Transaction amount in local currency.
+            tests:
+              - not_null
+          - name: currency
+            description: Transaction currency.
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["GBP"]
+          - name: payment_method
+            description: Payment method used.
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["card", "paypal", "apple_pay", "google_pay"]
+          - name: transaction_status
+            description: Final status of the transaction.
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["succeeded", "failed", "refunded"]
+
+      - name: raw_fraud_labels
+        description: Fraud review labels for transactions.
+        columns:
+          - name: transaction_id
+            description: Transaction being labelled.
+            tests:
+              - not_null
+              - unique
+              - relationships:
+                  arguments:
+                    to: source('raw', 'raw_transactions')
+                    field: transaction_id
+          - name: fraud_label
+            description: Fraud outcome assigned after review.
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["fraud", "legitimate"]
+          - name: label_reason
+            description: Reason for the assigned label.
+            tests:
+              - not_null
+          - name: labeled_at
+            description: Timestamp when the label was assigned.
+            tests:
+              - not_null
