@@ -21,6 +21,7 @@ dbt/.user.yml
 
 # Dagster local state
 .dagster/
+incidents/.state/
 
 # Local learning notes
 quiz.md

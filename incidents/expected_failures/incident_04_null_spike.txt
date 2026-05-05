@@ -1,0 +1,10 @@
+Expected validation:
+  make ingest && make dbt-run && make dbt-test
+
+Representative failures:
+  FAIL not_null_stg_sessions_traffic_source
+  FAIL assert_low_null_traffic_source_rate
+
+Diagnosis hint:
+  Nulls are concentrated in recent session dates, which points to a tracking deployment or source-population issue.
+

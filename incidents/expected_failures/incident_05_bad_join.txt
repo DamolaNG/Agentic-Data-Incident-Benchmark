@@ -1,0 +1,10 @@
+Expected validation:
+  make dbt-run && make dbt-test
+
+Representative failures:
+  FAIL unique_fct_fraud_features_transaction_id
+  FAIL assert_fraud_features_match_transaction_grain
+
+Diagnosis hint:
+  Compare fct_fraud_features row count with stg_transactions and inspect the join to int_session_events.
+

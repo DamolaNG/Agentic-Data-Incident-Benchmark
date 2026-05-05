@@ -1,0 +1,10 @@
+Expected validation:
+  make ingest && make dbt-run && make dbt-test
+
+Representative failures:
+  FAIL accepted_values_stg_transactions_currency
+  FAIL assert_revenue_uses_single_currency
+
+Diagnosis hint:
+  Revenue amounts are mixed across GBP, USD, and EUR before normalization.
+

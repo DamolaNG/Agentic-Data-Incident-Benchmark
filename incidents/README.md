@@ -1,13 +1,9 @@
 # Incidents
 
-This folder contains controlled data incident definitions.
+This folder contains controlled data incident definitions and expected failure notes.
 
-Each incident should eventually define:
+- `incident_catalog.yml` is the YAML registry for all benchmark incidents.
+- `expected_failures/` contains short representative validation failures.
+- `.state/` is created locally when incidents are injected and stores reset backups.
 
-- The failure being introduced.
-- The expected symptoms.
-- The correct diagnosis.
-- The expected fix.
-- The tests that prove the fix worked.
-- The benchmark scoring criteria.
-
+Use `make list-incidents`, `make break-incident-01`, and `make reset-incident-01` from the repository root. Full usage and learning notes are in `docs/incidents.md`.

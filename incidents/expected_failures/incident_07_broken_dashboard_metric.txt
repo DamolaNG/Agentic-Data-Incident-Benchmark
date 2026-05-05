@@ -1,0 +1,9 @@
+Expected validation:
+  make dbt-run && make dbt-test
+
+Representative failure:
+  FAIL assert_dashboard_conversion_matches_funnel
+
+Diagnosis hint:
+  The dashboard is calculating a valid-looking rate, but it no longer matches the governed mart conversion metric.
+

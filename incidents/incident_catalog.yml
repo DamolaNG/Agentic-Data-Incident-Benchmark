@@ -1,10 +1,158 @@
-incidents:
-  - id: INC-000
-    name: foundation_placeholder
-    status: placeholder
-    description: >
-      Placeholder incident used during phase 1. Later phases will replace this
-      with controlled data pipeline failures.
-    expected_signals: []
-    success_criteria: []
+version: 1
+description: Controlled incident registry for the agentic data incident benchmark.
 
+incidents:
+  - incident_id: incident_01_schema_drift
+    sequence: 1
+    incident_name: Schema drift in payments feed
+    business_impact: Finance revenue marts stop building before the morning trading review because the payment amount field is no longer available under the expected name.
+    technical_root_cause: The upstream payments exporter renamed raw_transactions.amount to raw_transactions.transaction_amount without a coordinated schema contract change.
+    affected_source_model: data/generated/raw_transactions.csv and dbt model stg_transactions
+    symptoms:
+      - dbt run fails while building stg_transactions.
+      - Downstream revenue, dashboard, and fraud feature models are not refreshed.
+      - Raw source inspection shows transaction_amount exists but amount is missing.
+    expected_failing_tests:
+      - "make ingest && make dbt-run fails with a missing amount column in stg_transactions."
+    hidden_correct_diagnosis: This is upstream schema drift, not an empty file or DuckDB type inference issue. The raw CSV header changed and the staging model still references the old field.
+    correct_fix_strategy: Update the staging contract deliberately by mapping transaction_amount back to amount or by coordinating the upstream field name rollback, then add/confirm a source schema check.
+    regression_risk: A quick alias may hide a real upstream contract break if both fields later appear with different values.
+    reset_command: make reset-incident-01
+    validation_command: make ingest && make dbt-run
+    expected_failure_output: incidents/expected_failures/incident_01_schema_drift.txt
+
+  - incident_id: incident_02_duplicate_events
+    sequence: 2
+    incident_name: Duplicate clickstream events
+    business_impact: Product analytics overstates engagement because replayed events inflate event counts and make session activity look healthier than it is.
+    technical_root_cause: A clickstream replay job re-emitted recent product, cart, checkout, and purchase events with new event IDs but identical business event attributes.
+    affected_source_model: data/generated/raw_events.csv and dbt model stg_events
+    symptoms:
+      - Row counts in raw_events rise sharply without a matching increase in sessions.
+      - Duplicate business events share session_id, user_id, event_timestamp, event_name, and page_url.
+      - Event-count based features and QA queries are inflated.
+    expected_failing_tests:
+      - assert_no_duplicate_clickstream_business_events
+    hidden_correct_diagnosis: The event_id uniqueness test passes because replayed rows have new IDs; the duplicate is visible only at the business event grain.
+    correct_fix_strategy: Deduplicate events by the business event key during ingestion or staging and fix the replay checkpoint so already-sent events are not emitted again.
+    regression_risk: Deduplicating too broadly can remove legitimate repeated user actions that happen at different timestamps.
+    reset_command: make reset-incident-02
+    validation_command: make ingest && make dbt-run && make dbt-test
+    expected_failure_output: incidents/expected_failures/incident_02_duplicate_events.txt
+
+  - incident_id: incident_03_delayed_ingestion
+    sequence: 3
+    incident_name: Delayed clickstream ingestion
+    business_impact: The latest dashboard dates show a sudden funnel collapse because recent sessions arrive before their associated clickstream events.
+    technical_root_cause: The event ingestion job is lagging for the newest session dates and has not delivered the latest event partitions.
+    affected_source_model: data/generated/raw_events.csv and dbt model int_session_events
+    symptoms:
+      - Recent sessions exist but have zero joined events.
+      - Funnel counts for the latest dates drop unexpectedly.
+      - Historical dates still look normal.
+    expected_failing_tests:
+      - assert_recent_sessions_have_events
+    hidden_correct_diagnosis: The product funnel did not collapse; event ingestion is delayed for the newest partitions while sessions still loaded on time.
+    correct_fix_strategy: Backfill the missing event partitions, repair ingestion scheduling/checkpointing, and keep a freshness or completeness test on recent partitions.
+    regression_risk: A backfill can duplicate events if the loader is not idempotent.
+    reset_command: make reset-incident-03
+    validation_command: make ingest && make dbt-run && make dbt-test
+    expected_failure_output: incidents/expected_failures/incident_03_delayed_ingestion.txt
+
+  - incident_id: incident_04_null_spike
+    sequence: 4
+    incident_name: Null spike in traffic source
+    business_impact: Marketing attribution becomes unreliable because recent sessions lose their traffic_source values and channel performance cannot be trusted.
+    technical_root_cause: A tracking deployment stopped populating traffic_source for a large share of recent sessions.
+    affected_source_model: data/generated/raw_sessions.csv and dbt model stg_sessions
+    symptoms:
+      - not_null tests fail on traffic_source.
+      - Nulls are concentrated in the newest session dates.
+      - Acquisition and traffic source cuts have an unexplained unknown bucket.
+    expected_failing_tests:
+      - not_null_stg_sessions_traffic_source
+      - assert_low_null_traffic_source_rate
+    hidden_correct_diagnosis: This is a recent instrumentation null spike, not random historical data quality noise.
+    correct_fix_strategy: Restore the tracking parameter, backfill traffic_source where logs allow it, and add a recent-partition null-rate threshold.
+    regression_risk: Filling nulls with a default such as direct can silently bias attribution metrics.
+    reset_command: make reset-incident-04
+    validation_command: make ingest && make dbt-run && make dbt-test
+    expected_failure_output: incidents/expected_failures/incident_04_null_spike.txt
+
+  - incident_id: incident_05_bad_join
+    sequence: 5
+    incident_name: Bad join multiplies fraud feature rows
+    business_impact: Fraud feature exports and model monitoring over-count transactions for users with multiple sessions, which can distort risk analytics and revenue-linked investigations.
+    technical_root_cause: The fraud feature model joins session event features by user_id instead of session_id, changing the join from transaction-session grain to transaction-user-session grain.
+    affected_source_model: dbt model fct_fraud_features
+    symptoms:
+      - fct_fraud_features has more rows than stg_transactions.
+      - transaction_id uniqueness fails in the feature table.
+      - Affected users with more sessions have larger duplication factors.
+    expected_failing_tests:
+      - unique_fct_fraud_features_transaction_id
+      - assert_fraud_features_match_transaction_grain
+    hidden_correct_diagnosis: The source data is not duplicated; the model join key changed and multiplied otherwise valid rows.
+    correct_fix_strategy: Restore the join to t.session_id = se.session_id and validate the feature table grain against the transaction table.
+    regression_risk: Fixing only with distinct can mask incorrect feature values selected from the wrong session.
+    reset_command: make reset-incident-05
+    validation_command: make dbt-run && make dbt-test
+    expected_failure_output: incidents/expected_failures/incident_05_bad_join.txt
+
+  - incident_id: incident_06_stale_feature_table
+    sequence: 6
+    incident_name: Stale fraud feature table
+    business_impact: Fraud scoring uses old feature rows and misses recent transaction behaviour, increasing the chance that current fraud patterns are not detected.
+    technical_root_cause: The fraud feature model filters out the most recent transaction dates, simulating a stale feature pipeline or frozen incremental watermark.
+    affected_source_model: dbt model fct_fraud_features
+    symptoms:
+      - stg_transactions contains newer transaction dates than fct_fraud_features.
+      - dbt run succeeds and most column tests still pass.
+      - Risk stakeholders see no recent feature records despite recent payments.
+    expected_failing_tests:
+      - assert_fraud_features_not_stale
+    hidden_correct_diagnosis: The table is structurally valid but stale; the issue is recency/completeness, not schema or type failure.
+    correct_fix_strategy: Remove the stale watermark/filter, backfill recent feature partitions, and add max-date parity checks against the transaction source.
+    regression_risk: Backfilling features without the same historical logic can introduce training-serving skew.
+    reset_command: make reset-incident-06
+    validation_command: make dbt-run && make dbt-test
+    expected_failure_output: incidents/expected_failures/incident_06_stale_feature_table.txt
+
+  - incident_id: incident_07_broken_dashboard_metric
+    sequence: 7
+    incident_name: Broken dashboard conversion metric
+    business_impact: Executives see an inflated conversion rate because the dashboard reports checkout-start rate as purchase conversion.
+    technical_root_cause: The dashboard model replaces purchase-session conversion with checkout-started sessions divided by total sessions.
+    affected_source_model: dbt model dashboard_business_metrics
+    symptoms:
+      - dbt run succeeds and dashboard rows remain unique.
+      - Dashboard conversion rate is materially higher than mart_daily_funnel.session_conversion_rate.
+      - Revenue does not support the apparent conversion improvement.
+    expected_failing_tests:
+      - assert_dashboard_conversion_matches_funnel
+    hidden_correct_diagnosis: This is a business logic bug in a technically valid metric, not a source load failure.
+    correct_fix_strategy: Restore the dashboard to use the mart-approved session_conversion_rate and keep a reconciliation test between dashboard and mart metrics.
+    regression_risk: Dashboard-only fixes can diverge again if metric definitions are duplicated instead of referenced from the governed mart.
+    reset_command: make reset-incident-07
+    validation_command: make dbt-run && make dbt-test
+    expected_failure_output: incidents/expected_failures/incident_07_broken_dashboard_metric.txt
+
+  - incident_id: incident_08_currency_conversion_issue
+    sequence: 8
+    incident_name: Mixed currencies in revenue feed
+    business_impact: Finance revenue is overstated or understated because GBP, USD, and EUR amounts are summed without currency normalization.
+    technical_root_cause: A marketplace expansion sends non-GBP transactions into raw_transactions while mart_revenue_daily still sums amount as if every row were GBP.
+    affected_source_model: data/generated/raw_transactions.csv and dbt model mart_revenue_daily
+    symptoms:
+      - currency accepted-values tests fail.
+      - gross_revenue mixes local-currency amounts.
+      - High-value recent days show suspicious revenue shifts.
+    expected_failing_tests:
+      - accepted_values_stg_transactions_currency
+      - assert_revenue_uses_single_currency
+    hidden_correct_diagnosis: The revenue math is technically executable but semantically wrong because amounts are not normalized to a common reporting currency.
+    correct_fix_strategy: Introduce an exchange-rate normalization step, report both local and normalized revenue where needed, and enforce allowed/reporting currency contracts.
+    regression_risk: Hard-coded exchange rates can create audit issues and stale conversions.
+    reset_command: make reset-incident-08
+    validation_command: make ingest && make dbt-run && make dbt-test
+    expected_failure_output: incidents/expected_failures/incident_08_currency_conversion_issue.txt

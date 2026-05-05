@@ -4,8 +4,10 @@ DBT := .venv/bin/dbt
 DAGSTER := .venv/bin/dagster
 WAREHOUSE_PATH := warehouse/local/benchmark.duckdb
 VENV_PYTHON ?= python3
+INCIDENT_CLI := $(PYTHON) -m agentic_data_incident_benchmark.incidents.cli
+export PYTHONPATH := src
 
-.PHONY: help setup install generate-data ingest dbt-debug dbt-run dbt-test dbt-docs dagster-dev pipeline test lint clean
+.PHONY: help setup install generate-data ingest dbt-debug dbt-run dbt-test dbt-docs dagster-dev pipeline test lint clean list-incidents reset-incidents break-incident-01 break-incident-02 break-incident-03 break-incident-04 break-incident-05 break-incident-06 break-incident-07 break-incident-08 reset-incident-01 reset-incident-02 reset-incident-03 reset-incident-04 reset-incident-05 reset-incident-06 reset-incident-07 reset-incident-08
 
 help:
 	@echo "Available commands:"
@@ -20,6 +22,10 @@ help:
 	@echo "  make pipeline       Generate, ingest, transform, and test"
 	@echo "  make test           Run Python tests"
 	@echo "  make lint           Run Ruff checks"
+	@echo "  make list-incidents List controlled data incidents"
+	@echo "  make break-incident-01..08 Inject a controlled incident"
+	@echo "  make reset-incident-01..08 Reset a controlled incident"
+	@echo "  make reset-incidents Reset every active controlled incident"
 	@echo "  make clean          Remove generated local outputs"
 
 setup:
@@ -58,6 +64,60 @@ test:
 
 lint:
 	$(PYTHON) -m ruff check .
+
+list-incidents:
+	$(INCIDENT_CLI) list
+
+break-incident-01:
+	$(INCIDENT_CLI) inject 1
+
+break-incident-02:
+	$(INCIDENT_CLI) inject 2
+
+break-incident-03:
+	$(INCIDENT_CLI) inject 3
+
+break-incident-04:
+	$(INCIDENT_CLI) inject 4
+
+break-incident-05:
+	$(INCIDENT_CLI) inject 5
+
+break-incident-06:
+	$(INCIDENT_CLI) inject 6
+
+break-incident-07:
+	$(INCIDENT_CLI) inject 7
+
+break-incident-08:
+	$(INCIDENT_CLI) inject 8
+
+reset-incident-01:
+	$(INCIDENT_CLI) reset 1
+
+reset-incident-02:
+	$(INCIDENT_CLI) reset 2
+
+reset-incident-03:
+	$(INCIDENT_CLI) reset 3
+
+reset-incident-04:
+	$(INCIDENT_CLI) reset 4
+
+reset-incident-05:
+	$(INCIDENT_CLI) reset 5
+
+reset-incident-06:
+	$(INCIDENT_CLI) reset 6
+
+reset-incident-07:
+	$(INCIDENT_CLI) reset 7
+
+reset-incident-08:
+	$(INCIDENT_CLI) reset 8
+
+reset-incidents:
+	$(INCIDENT_CLI) reset-all
 
 clean:
 	rm -rf data/generated/*.csv data/raw/*.csv warehouse/local/*.duckdb warehouse/local/*.wal dbt/target dbt/logs dbt/dbt_packages .dagster

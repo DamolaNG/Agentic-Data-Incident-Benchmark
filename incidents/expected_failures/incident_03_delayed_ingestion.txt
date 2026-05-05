@@ -1,0 +1,9 @@
+Expected validation:
+  make ingest && make dbt-run && make dbt-test
+
+Representative failure:
+  FAIL 1 assert_recent_sessions_have_events
+
+Diagnosis hint:
+  Recent raw_sessions rows exist, but matching recent raw_events rows are missing.
+

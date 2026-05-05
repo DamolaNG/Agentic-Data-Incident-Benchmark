@@ -1,0 +1,9 @@
+Expected validation:
+  make ingest && make dbt-run && make dbt-test
+
+Representative failure:
+  FAIL 1 assert_no_duplicate_clickstream_business_events
+
+Diagnosis hint:
+  event_id remains unique. Group by session_id, user_id, event_timestamp, event_name, and page_url to find replayed business events.
+

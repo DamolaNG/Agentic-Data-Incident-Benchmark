@@ -1,0 +1,9 @@
+Expected validation:
+  make dbt-run && make dbt-test
+
+Representative failure:
+  FAIL assert_fraud_features_not_stale
+
+Diagnosis hint:
+  The model builds, but max(fct_fraud_features.transaction_date) lags max(stg_transactions.transaction_date).
+

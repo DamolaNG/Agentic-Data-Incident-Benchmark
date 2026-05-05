@@ -1,0 +1,10 @@
+Expected validation:
+  make ingest && make dbt-run
+
+Representative failure:
+  Binder Error: Referenced column "amount" not found in FROM clause
+  Failing model: dbt/models/staging/stg_transactions.sql
+
+Diagnosis hint:
+  Inspect data/generated/raw_transactions.csv. The upstream field was renamed to transaction_amount.
+
