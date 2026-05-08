@@ -1,0 +1,1 @@
+incident_id,incident_name,workflow_mode,start_time,diagnosis_time_seconds,fix_time_seconds,total_time_seconds,root_cause_correct,fix_correct,tests_passed,regression_detected,wrong_fix_count,explanation_score,human_review_needed,llm_tool,estimated_cost_usd,notes

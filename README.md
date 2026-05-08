@@ -13,6 +13,7 @@ The project foundation includes:
 - dbt project for SQL transformations.
 - Dagster project for orchestration.
 - Incident catalog and benchmark result folders.
+- MTTR benchmark scripts for manual and Claude/Codex-assisted incident response.
 - Documentation and learning notes.
 - Makefile commands for repeatable local workflows.
 
@@ -27,6 +28,8 @@ The project foundation includes:
 ├── docs/                             # Architecture and learning documentation
 ├── incidents/                        # Incident definitions and scenarios
 ├── orchestration/                    # Dagster orchestration entry points
+├── results/                          # Benchmark CSV results
+├── scripts/                          # Benchmark timing, scoring, and analysis scripts
 ├── src/agentic_data_incident_benchmark/
 │   ├── data_generation/              # Synthetic source data creation
 │   ├── ingestion/                    # Loading raw data into DuckDB
@@ -86,3 +89,11 @@ Run the full local pipeline:
 ```bash
 make pipeline
 ```
+
+Generate benchmark analysis charts:
+
+```bash
+make benchmark-analyze
+```
+
+See `docs/benchmark_methodology.md` for the manual and Claude/Codex benchmark workflows.
