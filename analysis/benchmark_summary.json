@@ -1,4 +1,23 @@
 {
-  "runs": 0,
-  "by_workflow": {}
+  "runs": 16,
+  "by_workflow": {
+    "codex": {
+      "runs": 8,
+      "median_diagnosis_time_seconds": 290.0,
+      "median_fix_time_seconds": 740.0,
+      "accuracy_rate": 0.875,
+      "regression_rate": 0.125,
+      "median_explanation_score": 4.0,
+      "total_estimated_cost_usd": 1.77
+    },
+    "manual": {
+      "runs": 8,
+      "median_diagnosis_time_seconds": 870.0,
+      "median_fix_time_seconds": 1470.0,
+      "accuracy_rate": 1.0,
+      "regression_rate": 0.0,
+      "median_explanation_score": 5.0,
+      "total_estimated_cost_usd": 0.0
+    }
+  }
 }
