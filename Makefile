@@ -6,6 +6,7 @@ WAREHOUSE_PATH := warehouse/local/benchmark.duckdb
 VENV_PYTHON ?= python3
 INCIDENT_CLI := $(PYTHON) -m agentic_data_incident_benchmark.incidents.cli
 export PYTHONPATH := src
+export DBT_SEND_ANONYMOUS_USAGE_STATS := false
 
 .PHONY: help setup install generate-data ingest dbt-debug dbt-run dbt-test dbt-docs dagster-dev pipeline test lint clean list-incidents reset-incidents benchmark-analyze benchmark-score-example break-incident-01 break-incident-02 break-incident-03 break-incident-04 break-incident-05 break-incident-06 break-incident-07 break-incident-08 reset-incident-01 reset-incident-02 reset-incident-03 reset-incident-04 reset-incident-05 reset-incident-06 reset-incident-07 reset-incident-08
 

@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DBT_SEND_ANONYMOUS_USAGE_STATS: "false"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Lint
+        run: python -m ruff check .
+
+      - name: Run Python tests
+        run: python -m pytest
+
+      - name: Generate synthetic data
+        run: make generate-data PYTHON=python
+
+      - name: Ingest raw data into DuckDB
+        run: make ingest PYTHON=python
+
+      - name: Run dbt models
+        run: make dbt-run DBT=dbt
+
+      - name: Run dbt tests
+        run: make dbt-test DBT=dbt
+
+      - name: Generate benchmark charts
+        run: make benchmark-analyze PYTHON=python
+
+      - name: Verify chart outputs
+        run: |
+          test -f analysis/charts/median_diagnosis_time_by_workflow.png
+          test -f analysis/charts/median_fix_time_by_workflow.png
+          test -f analysis/charts/accuracy_by_workflow.png
+          test -f analysis/charts/regression_rate_by_workflow.png
+          test -f analysis/charts/cost_per_incident.png
+          test -f analysis/charts/speed_vs_accuracy_scatter.png
