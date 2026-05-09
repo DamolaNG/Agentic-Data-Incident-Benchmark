@@ -240,7 +240,7 @@ Article-ready copies live in `docs/article/assets/`.
 
 ## Limitations
 
-- The current executable catalog contains 8 controlled incidents. The article draft uses the requested headline about 12 broken pipelines, so either add 4 more executable incidents or adjust the title before publishing.
+- The current executable catalog contains 8 controlled incidents, so benchmark claims should be framed around those implemented scenarios.
 - Results are local and synthetic, not production measurements.
 - Explanation scoring is rubric-based and still benefits from human review.
 - The benchmark does not yet model multi-user incident response, alert fatigue, on-call handoffs, or production permissions.
@@ -248,7 +248,7 @@ Article-ready copies live in `docs/article/assets/`.
 
 ## Future Improvements
 
-- Add four more executable incidents covering orchestration failure, ownership ambiguity, freshness SLA breach, and feature-store training-serving skew.
+- Add more executable incidents covering orchestration failure, ownership ambiguity, freshness SLA breach, and feature-store training-serving skew.
 - Add automated PR review scenarios where the agent must explain and defend a fix.
 - Track token usage and cost directly from LLM provider APIs.
 - Add blind human review for explanation quality and fix correctness.
