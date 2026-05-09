@@ -5,13 +5,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import tempfile
 from pathlib import Path
 
 import pandas as pd
 
 from benchmark_utils import RESULTS_PATH
 
-MPL_CACHE_DIR = Path("/private/tmp/agentic_data_incident_benchmark_matplotlib")
+MPL_CACHE_DIR = Path(tempfile.gettempdir()) / "agentic_data_incident_benchmark_matplotlib"
 MPL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLBACKEND", "Agg")
 os.environ.setdefault("MPLCONFIGDIR", str(MPL_CACHE_DIR))
