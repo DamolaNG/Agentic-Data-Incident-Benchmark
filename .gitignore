@@ -26,3 +26,9 @@ incidents/.state/
 # Local learning notes
 quiz.md
 docs/
+!docs/
+docs/*
+!docs/article/
+docs/article/*
+!docs/article/assets/
+!docs/article/assets/**
